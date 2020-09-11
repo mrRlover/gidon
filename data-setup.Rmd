@@ -1,0 +1,288 @@
+---
+  title: "Data Transformations"
+---
+  
+  
+```{r packages, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+packages <- c("tidyverse", "kableExtra", "knitr", "tidyquant")
+
+for (package in packages) {
+  if (!require(package, character.only=T, quietly=T)) {
+    install.packages(package, repos="http://cran.us.r-project.org")
+  }
+  library(package, character.only=T)
+}
+```
+
+
+
+```{r scipen, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+options("scipen"=99)
+```
+
+
+
+```{r digits, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+options("digits"=3)
+```
+
+
+
+```{r data_import_function, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+data_import <- function(x, na = "") {
+  df <- read.csv(x, check.names = FALSE, na.strings = na)
+  assign(substr(x, 6, nchar(x)-4), df, envir = .GlobalEnv)
+  return(NULL)
+}
+```
+
+
+
+```{r import_data, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+filenames <- list.files("Data/", pattern = "*.csv", full.names = TRUE)
+
+sapply(filenames, data_import, na = c("", "NA", "#N/A", "#N/A Invalid Security"))
+```
+
+
+
+```{r head_and_tail, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+rbind(head(price), tail(price))[,1:5]
+```
+
+
+
+```{r show_head_and_tail, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+priceTable <- kable(rbind(head(price), tail(price))[,1:5], row.names = FALSE)
+priceTable <- gsub("<table>", "<table class = 'pretty-table'>", priceTable)
+priceTable <- gsub('> NA', ' class = "na-data"> NA', priceTable)
+priceTable
+remove(priceTable)
+```
+
+
+
+```{r na_delete, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+price <- price[,colSums(is.na(price))<nrow(price)]
+```
+
+
+
+```{r head_and_tail_no_na, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+rbind(head(price), tail(price))[,1:5]
+```
+
+
+
+```{r no_na, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+priceTable <- kable(rbind(head(price), tail(price))[,1:5], row.names = FALSE)
+priceTable <- gsub("<table>", "<table class = 'pretty-table'>", priceTable)
+priceTable <- gsub('> NA', ' class = "na-data"> NA', priceTable)
+priceTable
+remove(priceTable)
+```
+
+
+
+```{r drop_na, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+mcap <- mcap[, colnames(price)]
+```
+
+
+
+```{r numeric_type, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+price[,-1] <- sapply(price[, -1],  as.numeric)
+mcap[,-1] <- sapply(mcap[, -1], as.numeric)
+```
+
+# Time series 
+
+```{r xts}
+price <- xts(price[,-1], order.by = ymd(price$Date))
+mcap <- xts(mcap[,-1], order.by = ymd(mcap$Date))
+jse <- xts(jse[,"JALSH Index"], order.by = ymd(jse[,1]))
+rfr <- xts(rfr[,2], order.by = ymd(rfr$Date))
+```
+
+## Sample period
+
+In the methodology section of our research report, the specified sample period is from January 2000 to December 2019. Therefore, we extract only this date range for our data.
+
+```{r sample_period}
+price <- price["2000/2019"]
+mcap <- mcap["2000/2019"]
+jse <- jse["2000/2019"]
+rfr <- rfr["2000/2019"]
+```
+
+Before proceeding, it is important to check that all our datasets have the same dates.
+
+```{r date_check}
+all(identical(index(price), index(mcap), index(jse), index(rfr)))
+```
+
+The `index` function is from the `zoo` package, which extracts the row index of an object. If the object in question is of type `xts`, it returns a list of dates. The dates are all identical, so we are in the clear.
+
+## Monthly data
+
+From the methodology section of our research report, we have defined the periodicity to be monthly. Therefore, we need to turn all of our time series data into monthly series. This can be easily done by simply extracting the last observation in each month.
+
+```{r monthly_data}
+price <- price[endpoints(price)]
+mcap <- mcap[index(price)]
+jse <- jse[index(price)]
+rfr <- rfr[index(price)] / 1200
+```
+
+For the risk free rate, we divide by 1200. The 12 is to turn it into a monthly rate and the 100 is to turn it from a percentage to a decimal.
+
+# Returns
+
+Calculate returns, which will be used to form portfolios.
+
+```{r returns}
+returns <- diff(log(price))
+jalsh <- diff(log(jse))
+```
+
+# Top 100 shares 
+
+In the methodology of our research, we mention that shares that are outside of the top 100 shares by market capitalisation will be excluded. This is done at every sort date. 
+
+```{r top_100}
+mcap100 <- t(apply(-mcap, 1, rank, na.last = "keep", ties.method = "first"))
+```
+
+The code above is simple. We use the apply function to, well apply the rank function over each row. That's what the 1 in the second argument is for, it tells the function to apply rank over the rows. We pass additional arguments na.last and ties.method. The former keeps NAs as NAs without including them in the rank and the later, places the first occurrence as first in the event of a tie.
+
+We can inspect the result using a combination of `head` and `tail`
+
+```{r head_tail_mcap_100, results='hide', message=FALSE, warning=FALSE}
+rbind(head(mcap100), tail(mcap100))[,1:5]
+```
+
+
+
+```{r show_head_tail, echo=FALSE, message=FALSE, warning=FALSE}
+mcap100Table <- kable(rbind(head(mcap100), tail(mcap100))[,1:5], row.names = FALSE)
+mcap100Table <- gsub("<table>", "<table class = 'pretty-table'>", mcap100Table)
+mcap100Table <- gsub('> NA', ' class = "na-data"> NA', mcap100Table)
+mcap100Table
+remove(mcap100Table)
+```
+
+
+
+```{r exclude}
+mcap100_mask <- ifelse(mcap100 <= 100,1,NA)
+```
+
+Once the rank is done, excluding shares is easily done with an `ifelse` function call. If there is any number less than 100, give it a 1, else give it an NA.
+
+Once again, `head` and `tail` are useful to inspect the result.
+
+```{r head_and_tail_mask, results='hide', message=FALSE, warning=FALSE}
+rbind(head(mcap100_mask), tail(mcap100_mask))[,1:5]
+```
+
+
+
+```{r show_mask, echo=FALSE, message=FALSE, warning=FALSE}
+mcap100_maskTable <- kable(rbind(head(mcap100_mask), tail(mcap100_mask))[,1:5], row.names = FALSE)
+mcap100_maskTable <- gsub("<table>", "<table class = 'pretty-table'>", mcap100_maskTable)
+mcap100_maskTable <- gsub('> NA', ' class = "na-data"> NA', mcap100_maskTable)
+mcap100_maskTable
+remove(mcap100_maskTable)
+```
+
+Last step is to multiply the mask matrix with the mcap matrix.
+
+```{r mcap_mask}
+mcap <- mcap * mcap100_mask
+```
+
+The result of this operation can be seen using `head` and `tail`.
+
+```{r head_and_tail_mcap, results='hide', message=FALSE, warning=FALSE}
+rbind(head(mcap), tail(mcap))[,1:5]
+```
+
+
+
+```{r show_mcap, echo=FALSE, message=FALSE, warning=FALSE}
+mcapTable <- kable(rbind(head(mcap), tail(mcap))[,1:5], row.names = FALSE)
+mcapTable <- gsub("<table>", "<table class = 'pretty-table'>", mcapTable)
+mcapTable <- gsub('> NA', ' class = "na-data"> NA', mcapTable)
+mcapTable
+remove(mcapTable)
+```
+
+We can see that it has worked brilliantly, shares that are not in the top 100 have NA. This can be confirmed with the ACL SJ Equity data frame. Recall from the data import section that this column had data at the tail end but had experienced a sharp price depreciation. Naturally, this would be accompanied by a fall from the top 100 shares, as can be seen in the table above. 
+
+Finally, we multiply the mcap100_mask matrix with the return data to exclude shares outside of the top 100 at any given moment.
+
+```{r return_mask}
+returns <- returns * mcap100_mask
+```
+
+The result of this operation can be seen using `head` and `tail`.
+
+```{r head_and_tail_returns, results='hide', message=FALSE, warning=FALSE}
+rbind(head(returns), tail(returns))[,1:5]
+```
+
+
+
+```{r show_returns, echo=FALSE, message=FALSE, warning=FALSE}
+returnsTable <- kable(rbind(head(returns), tail(returns))[,1:5], row.names = FALSE)
+returnsTable <- gsub("<table>", "<table class = 'pretty-table'>", returnsTable)
+returnsTable <- gsub('> NA', ' class = "na-data"> NA', returnsTable)
+returnsTable
+remove(returnsTable)
+```
+
+# Volatility
+
+Lastly, we need to create volatility series for the portfolio sorts. We use 12 month prior volatility. To implement this in R, simply use a rolliing window to calculate standard deviation.
+
+```{r volatility}
+vol <- rollapply(data = returns, width = 12, FUN = sd, fill = NA)
+```
+
+Rolling operations can be done with the `rollapply` function from the `zoo` package. 
+
+```{r annual_volatility, warning=FALSE}
+volAnn <- vol[endpoints(vol, on = "years")] * sqrt(12)
+
+yrs <- year(index(volAnn))[-1]
+
+for (yr in yrs) {
+  mon <- as.character(yr)
+  temp <- coredata(volAnn[mon])
+  vol[mon,] <- rbind(temp, temp[rep(1, 11), ])
+}
+```
+
+Since we really only need one value for volatility, we use the for loop above to fill the months of a year with the final volatility of the previous year.
+
+```{r volAnn, results='hide'}
+rbind(head(vol["2001/2019"]), tail(vol["2001/2019"]))[,1:5]
+```
+
+
+
+```{r show_vol_table, echo=FALSE, message=FALSE, warning=FALSE}
+volTable <- kable(rbind(head(vol["2001/2019"]), tail(vol["2001/2019"]))[,1:5])
+volTable <- gsub("<table>", "<table class = 'pretty-table'>", volTable)
+volTable <- gsub('> NA', ' class = "na-data"> NA', volTable)
+volTable
+remove(volTable)
+```
+
+Perfect! We now have our universe of shares for the porfolio sorts.
+
+
+```{r blank}
+
+```
+

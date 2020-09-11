@@ -1,0 +1,28 @@
+---
+title: "Setting up the workspace"
+---
+
+
+```{r packages, results='hide', message=FALSE, warning=FALSE}
+packages <- c("tidyverse", "kableExtra", "knitr", "tidyquant")
+
+for (package in packages) {
+    if (!require(package, character.only=T, quietly=T)) {
+        install.packages(package, repos="http://cran.us.r-project.org")
+    }
+    library(package, character.only=T)
+}
+```
+
+
+
+```{r scipen}
+options("scipen"=99)
+```
+
+
+
+```{r digits}
+options("digits"=3)
+```
+

@@ -1,0 +1,117 @@
+---
+title: "Importing and Cleaning Data"
+---
+
+
+```{r packages, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+packages <- c("tidyverse", "kableExtra", "knitr", "tidyquant")
+
+for (package in packages) {
+    if (!require(package, character.only=T, quietly=T)) {
+        install.packages(package, repos="http://cran.us.r-project.org")
+    }
+    library(package, character.only=T)
+}
+```
+
+
+
+```{r scipen, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+options("scipen"=99)
+```
+
+
+
+```{r digits, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+options("digits"=3)
+```
+
+In this section we import and clean our data in order to run our tests. We begin with data import.
+
+# Data Import
+
+Our data folder contains four csv files, two of which have the same variables but different observations and the other two completely different from each other and the two similar files. If they all had the same number of observations, easily import into a list. With different obseravtions, and only four data files, a list is not justified. Therefore, we write a function to simultaneously import all files at one go rather than having to import them all individually.
+
+```{r data_import_function, message=FALSE, results='hide', warning=FALSE}
+data_import <- function(x, na = "") {
+  df <- read.csv(x, check.names = FALSE, na.strings = na)
+  assign(substr(x, 6, nchar(x)-4), df, envir = .GlobalEnv)
+  return(NULL)
+}
+```
+
+The function is simple, it takes a file name as a required argument, passes it to the file argument of `read.csv` and assigns the data to df. This df is only assigned in the function scope and not in the global environment. Therefore, to save this to the global environment, we use the `assign` function. This function assigns a value to a name in an environment. We specify the environment as the global environment and use the file name as the variable name. That assigns the data frame to the Global environment with the file name as the variable name. Such behaviour is undesirable with code written for others, but in our context, it works well.
+
+Note that we use `substr` function to remove the full file path and file extension.
+
+```{r import_data, results='hide'}
+filenames <- list.files("Data/", pattern = "*.csv", full.names = TRUE)
+
+sapply(filenames, data_import, na = c("", "NA", "#N/A", "#N/A Invalid Security"))
+```
+
+The code above lists all the files in the Data folder with a file extension of ".csv". We then pass this vector to the list argument of `sapply` to import each of the files in the data folder into R. We also pass a vector to the optional na argument, which is passed to the na.strings argument of `read.csv`. This will define which character strings should be treated as missing values in R.
+
+Let us take a look at our newly imported data.
+
+```{r head_and_tail, results='hide'}
+rbind(head(price), tail(price))[,1:5]
+```
+
+
+
+```{r show_head_and_tail, echo=FALSE}
+priceTable <- kable(rbind(head(price), tail(price))[,1:5], row.names = FALSE)
+priceTable <- gsub("<table>", "<table class = 'pretty-table'>", priceTable)
+priceTable <- gsub('> NA', ' class = "na-data"> NA', priceTable)
+priceTable
+remove(priceTable)
+```
+
+Looks like we have a lot of missing data and judging by the last two columns, there might even be full columns with missing data. Or maybe these two variables have data in the middle years but not in the early and later years? Let's find out!
+
+# Data clean
+
+The most glaring issue so far is missing data. So let us remove variables whose observations are missing entirely. To drop columns with entirely NA observations, we select columns where the sum of the number of NA observations is less than the total number of observations in the price dataset. 
+
+```{r na_delete}
+price <- price[,colSums(is.na(price))<nrow(price)]
+```
+
+We then combine `head` and `tail` of the data to reveal the results.
+
+```{r head_and_tail_no_na, results='hide'}
+rbind(head(price), tail(price))[,1:5]
+```
+
+
+```{r no_na, echo=FALSE}
+priceTable <- kable(rbind(head(price), tail(price))[,1:5], row.names = FALSE)
+priceTable <- gsub("<table>", "<table class = 'pretty-table'>", priceTable)
+priceTable <- gsub('> NA', ' class = "na-data"> NA', priceTable)
+priceTable
+remove(priceTable)
+```
+
+Well, looks like ABL SJ Equity was completely filled with NAs and ABT SJ Equity	has missing data only in the early and later years. We also need to drop the same columns in the mcap data frame.
+
+Very interesting site is the colossal price reduction of ACL SJ Equity!
+
+```{r drop_na, echo=FALSE}
+mcap <- mcap[, colnames(price)]
+```
+
+Since the mcap data frame has the same variables as the original price data, we can simply use the column names in price to select variables that contain at least some data.
+
+If you are going to perform arithmetic operations on objects, it is important that the data is of the same type. We make sure that this is the case in our data frames.
+
+```{r numeric_type}
+price[,-1] <- sapply(price[, -1],  as.numeric)
+mcap[,-1] <- sapply(mcap[, -1], as.numeric)
+```
+
+We exclude the first column because that is the date column, which we'd rather keep as a character for now.
+
+```{r blank}
+```
+

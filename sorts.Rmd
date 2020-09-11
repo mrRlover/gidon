@@ -1,0 +1,136 @@
+---
+  title: "Sorting shares into volatility portfolios"
+---
+  
+  
+```{r prior_code, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+packages <- c("tidyverse", "kableExtra", "knitr", "tidyquant")
+
+for (package in packages) {
+  if (!require(package, character.only=T, quietly=T)) {
+    install.packages(package, repos="http://cran.us.r-project.org")
+  }
+  library(package, character.only=T)
+}
+
+options("scipen"=99)
+
+options("digits"=3)
+
+data_import <- function(x, na = "") {
+  df <- read.csv(x, check.names = FALSE, na.strings = na)
+  assign(substr(x, 6, nchar(x)-4), df, envir = .GlobalEnv)
+  return(NULL)
+}
+
+filenames <- list.files("Data/", pattern = "*.csv", full.names = TRUE)
+
+sapply(filenames, data_import, na = c("", "NA", "#N/A", "#N/A Invalid Security"))
+
+price <- price[,colSums(is.na(price))<nrow(price)]
+
+mcap <- mcap[, colnames(price)]
+
+price[,-1] <- sapply(price[, -1],  as.numeric)
+mcap[,-1] <- sapply(mcap[, -1], as.numeric)
+
+price <- xts(price[,-1], order.by = ymd(price$Date))
+mcap <- xts(mcap[,-1], order.by = ymd(mcap$Date))
+jse <- xts(jse[,"JALSH Index"], order.by = ymd(jse[,1]))
+rfr <- xts(rfr[,2], order.by = ymd(rfr$Date))
+
+price <- price["2000/2019"]
+mcap <- mcap["2000/2019"]
+jse <- jse["2000/2019"]
+rfr <- rfr["2000/2019"]
+
+price <- price[endpoints(price)]
+mcap <- mcap[index(price)]
+jse <- jse[index(price)]
+rfr <- rfr[index(price)] / 1200
+
+returns <- diff(log(price))
+jalsh <- diff(log(jse))
+
+# Top 100 shares 
+
+mcap100 <- t(apply(-mcap, 1, rank, na.last = "keep", ties.method = "first"))
+
+mcap100_mask <- ifelse(mcap100 <= 100,1,NA)
+
+mcap <- mcap * mcap100_mask
+
+returns <- returns * mcap100_mask
+
+vol <- rollapply(data = returns, width = 12, FUN = sd, fill = NA)
+volAnn <- vol[endpoints(vol, on = "years")] * sqrt(12)
+
+yrs <- year(index(volAnn))[-1]
+
+for (yr in yrs) {
+  mon <- as.character(yr)
+  temp <- coredata(volAnn[mon])
+  vol[mon, ] <- rbind(temp, temp[rep(1, 11), ])
+}
+```
+
+In this section, we sort shares into portfolios following the specification in our methodology section. Subsequently, we calculate the returns to these portfolios.
+
+Firstly, we rank shares based on their volatility in each month. We use the exact same code we used to rank market capitalisations.
+
+```{r vol_rank}
+vol100 <- t(apply(-vol, 1, rank, na.last = "keep", ties.method = "first"))
+```
+
+Since the volatilities are repeated 12 times in each year, we should get the same ranking in each month of the year. We can inspect if this is the case by using `head` and `tail`.
+
+```{r vol_100_show, results='hide'}
+rbind(head(vol100[-c(1:12),]), tail(vol100))[,1:5]
+```
+
+
+
+```{r show_head_tail, echo=FALSE, message=FALSE, warning=FALSE}
+vol100Table <- kable(rbind(head(vol100[-c(1:12),]), tail(vol100))[,1:5], row.names = FALSE)
+vol100Table <- gsub("<table>", "<table class = 'pretty-table'>", vol100Table)
+vol100Table <- gsub('> NA', ' class = "na-data"> NA', vol100Table)
+vol100Table
+remove(vol100Table)
+```
+
+Our logic worked, the ranks are the same for a year. 
+
+```{r vol_sorts, eval=FALSE, include=FALSE}
+high_vol <- ifelse(vol100 <= 20, 1, NA)
+vol_2 <- ifelse(vol100 > 20 & vol100 <= 40, 1, NA)
+vol_3 <- ifelse(vol100 > 40 & vol100 <= 60, 1, NA)
+vol_4 <- ifelse(vol100 > 60 & vol100 <= 80, 1, NA)
+low_vol <- ifelse(vol100 > 80 & vol100 <= 100, 1, NA)
+```
+
+
+
+```{r vol_quantile_sorts}
+high_vol <- ifelse(vol100 <= quantile(vol100, 0.2, na.rm = TRUE), 1, NA)
+vol_2 <- ifelse(vol100 > quantile(vol100, 0.2, na.rm = TRUE) & vol100 <= quantile(vol100, 0.4, 
+                                                                                  na.rm = TRUE), 1, NA)
+vol_3 <- ifelse(vol100 > quantile(vol100, 0.4, na.rm = TRUE) & vol100 <= quantile(vol100, 0.6, 
+                                                                                  na.rm = TRUE), 1, NA)
+vol_4 <- ifelse(vol100 > quantile(vol100, 0.6, na.rm = TRUE) & vol100 <= quantile(vol100, 0.8, 
+                                                                                  na.rm = TRUE), 1, NA)
+low_vol <- ifelse(vol100 > quantile(vol100, 0.8, 
+                                    na.rm = TRUE), 1, NA)
+```
+
+We use `ifelse` to sort shares into high and low volatility portfolios. The top 20 shares are the highest volatility shares and the bottom 20 shares are the lowest volatility shares.
+
+The above code creates five matrices with 20 shares in each row of each matrix containing a 1 corresponding to that share belonging to that portfolio in that time frame. 
+
+The usefulness of this is that it is very easy to calculate portfolio returns.
+
+
+
+```{r blank}
+
+```
+

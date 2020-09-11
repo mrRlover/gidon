@@ -1,0 +1,31 @@
+name: "gidon-brigitte-report"
+navbar:
+  title: "Honours R Project"
+  left:
+    - text: "Home"
+      icon: fa-home
+      href: index.html
+    - text: "Setup"
+      icon: fa-cog
+      href: setup.html
+    - text: "Data Import"
+      icon: fa-info
+      href: data.html
+    - text: "Data Setup"
+      icon: fa-exchange-alt
+      href: data-setup.html
+    - text: "Portfolio Sorts"
+      icon: fa-sort-amount-up
+      href: sorts.html
+    - text: "Portfolio Returns"
+      icon: fa-chart-line
+      href: returns.html
+    - text: "Tests"
+      href: tests.html
+output:
+  html_document:
+    theme: flatly
+    highlight: textmate
+#    include:
+#     after_body: footer.html
+    css: css/styles.css
