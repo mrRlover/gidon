@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Portfolio Returns</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="css\styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Honours R Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="setup.html">
+    <span class="fa fa-cog"></span>
+     
+    Setup
+  </a>
+</li>
+<li>
+  <a href="data.html">
+    <span class="fa fa-info"></span>
+     
+    Data Import
+  </a>
+</li>
+<li>
+  <a href="data-setup.html">
+    <span class="fa fa-exchange-alt"></span>
+     
+    Data Setup
+  </a>
+</li>
+<li>
+  <a href="sorts.html">
+    <span class="fa fa-sort-amount-up"></span>
+     
+    Portfolio Sorts
+  </a>
+</li>
+<li>
+  <a href="returns.html">
+    <span class="fa fa-chart-line"></span>
+     
+    Portfolio Returns
+  </a>
+</li>
+<li>
+  <a href="tests.html">Tests</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Portfolio Returns</h1>
+
+</div>
+
+
+<p>Creating portfolio returns is easy once all the hard work is done. The code below demonstates how straightfoward this is.</p>
+<pre class="r"><code>portfolio &lt;- data.frame(high = rowMeans(returns * high_vol, na.rm = T),
+                        port2 = rowMeans(returns * vol_2, na.rm = T),
+                        port3 = rowMeans(returns * vol_3, na.rm = T),
+                        port4 = rowMeans(returns * vol_4, na.rm = T),
+                        low = rowMeans(returns * low_vol, na.rm = T),
+                        row.names = index(returns))</code></pre>
+<p>The code above creates a dataframe containing returns of the five portfolios. We’ve combined a few steps together here so let’s break them down. First, we get returns of the shares in each portfolio by multiplying the returns by the porfolio matrices. Since the portfolio matrices just have 1s and NAs, the result is returns where the share is in the portfolio, and NAs where it isn’t.</p>
+<p>After this, we get the average return in each month using rowMeans. Since the returns matrix at this stage will only have 20 non-missing data in each row, this average will be the return of the portfolio in that month. And just like that, we have a dataframe of returns for all portfolios.</p>
+<pre class="r"><code>rbind(head(portfolio[-c(1:12),]), tail(portfolio))</code></pre>
+<table class = 'pretty-table'>
+<thead>
+<tr>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+port2
+</th>
+<th style="text-align:right;">
+port3
+</th>
+<th style="text-align:right;">
+port4
+</th>
+<th style="text-align:right;">
+low
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.108
+</td>
+<td style="text-align:right;">
+0.150
+</td>
+<td style="text-align:right;">
+0.060
+</td>
+<td style="text-align:right;">
+0.052
+</td>
+<td style="text-align:right;">
+0.047
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.078
+</td>
+<td style="text-align:right;">
+-0.017
+</td>
+<td style="text-align:right;">
+-0.001
+</td>
+<td style="text-align:right;">
+-0.025
+</td>
+<td style="text-align:right;">
+-0.011
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.248
+</td>
+<td style="text-align:right;">
+-0.040
+</td>
+<td style="text-align:right;">
+-0.061
+</td>
+<td style="text-align:right;">
+-0.025
+</td>
+<td style="text-align:right;">
+-0.038
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.124
+</td>
+<td style="text-align:right;">
+0.076
+</td>
+<td style="text-align:right;">
+0.091
+</td>
+<td style="text-align:right;">
+0.033
+</td>
+<td style="text-align:right;">
+0.043
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.059
+</td>
+<td style="text-align:right;">
+0.045
+</td>
+<td style="text-align:right;">
+0.035
+</td>
+<td style="text-align:right;">
+0.007
+</td>
+<td style="text-align:right;">
+0.026
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.021
+</td>
+<td style="text-align:right;">
+0.058
+</td>
+<td style="text-align:right;">
+0.042
+</td>
+<td style="text-align:right;">
+0.035
+</td>
+<td style="text-align:right;">
+0.033
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.020
+</td>
+<td style="text-align:right;">
+-0.016
+</td>
+<td style="text-align:right;">
+-0.049
+</td>
+<td style="text-align:right;">
+-0.034
+</td>
+<td style="text-align:right;">
+-0.025
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.023
+</td>
+<td style="text-align:right;">
+-0.036
+</td>
+<td style="text-align:right;">
+-0.046
+</td>
+<td style="text-align:right;">
+-0.031
+</td>
+<td style="text-align:right;">
+-0.021
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.042
+</td>
+<td style="text-align:right;">
+-0.003
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.017
+</td>
+<td style="text-align:right;">
+0.014
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.086
+</td>
+<td style="text-align:right;">
+0.036
+</td>
+<td style="text-align:right;">
+0.032
+</td>
+<td style="text-align:right;">
+0.044
+</td>
+<td style="text-align:right;">
+0.020
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.050
+</td>
+<td style="text-align:right;">
+0.013
+</td>
+<td style="text-align:right;">
+-0.011
+</td>
+<td style="text-align:right;">
+-0.010
+</td>
+<td style="text-align:right;">
+-0.011
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.067
+</td>
+<td style="text-align:right;">
+0.029
+</td>
+<td style="text-align:right;">
+-0.015
+</td>
+<td style="text-align:right;">
+-0.004
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+</tbody>
+</table>
+<p>The final return calculation is to get the cumulative returns. This is done using the <code>cumprod</code> function.</p>
+<pre class="r"><code>portfolio[1:12,] &lt;- 0
+
+r.xts &lt;- xts(portfolio, order.by = index(returns))[-c(1:11),]
+c.xts &lt;- cumprod(1+r.xts)
+port_ret &lt;- data.frame(dates = index(-c.xts), c.xts)</code></pre>
+<p>The result is shown below</p>
+<pre class="r"><code>rbind(head(port_ret[-c(1:12),]), tail(port_ret))</code></pre>
+<table class = 'pretty-table'>
+<thead>
+<tr>
+<th style="text-align:left;">
+dates
+</th>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+port2
+</th>
+<th style="text-align:right;">
+port3
+</th>
+<th style="text-align:right;">
+port4
+</th>
+<th style="text-align:right;">
+low
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2001-12-31
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+<td style="text-align:right;">
+1.35
+</td>
+<td style="text-align:right;">
+1.28
+</td>
+<td style="text-align:right;">
+1.08
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2002-01-31
+</td>
+<td style="text-align:right;">
+0.826
+</td>
+<td style="text-align:right;">
+1.30
+</td>
+<td style="text-align:right;">
+1.25
+</td>
+<td style="text-align:right;">
+1.06
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2002-02-28
+</td>
+<td style="text-align:right;">
+0.876
+</td>
+<td style="text-align:right;">
+1.26
+</td>
+<td style="text-align:right;">
+1.27
+</td>
+<td style="text-align:right;">
+1.07
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2002-03-28
+</td>
+<td style="text-align:right;">
+0.882
+</td>
+<td style="text-align:right;">
+1.26
+</td>
+<td style="text-align:right;">
+1.30
+</td>
+<td style="text-align:right;">
+1.06
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2002-04-30
+</td>
+<td style="text-align:right;">
+0.963
+</td>
+<td style="text-align:right;">
+1.41
+</td>
+<td style="text-align:right;">
+1.39
+</td>
+<td style="text-align:right;">
+1.12
+</td>
+<td style="text-align:right;">
+1.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2002-05-31
+</td>
+<td style="text-align:right;">
+1.020
+</td>
+<td style="text-align:right;">
+1.48
+</td>
+<td style="text-align:right;">
+1.44
+</td>
+<td style="text-align:right;">
+1.13
+</td>
+<td style="text-align:right;">
+1.08
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-07-31
+</td>
+<td style="text-align:right;">
+0.678
+</td>
+<td style="text-align:right;">
+7.02
+</td>
+<td style="text-align:right;">
+9.53
+</td>
+<td style="text-align:right;">
+8.24
+</td>
+<td style="text-align:right;">
+7.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-08-30
+</td>
+<td style="text-align:right;">
+0.693
+</td>
+<td style="text-align:right;">
+6.77
+</td>
+<td style="text-align:right;">
+9.09
+</td>
+<td style="text-align:right;">
+7.99
+</td>
+<td style="text-align:right;">
+7.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-09-30
+</td>
+<td style="text-align:right;">
+0.664
+</td>
+<td style="text-align:right;">
+6.75
+</td>
+<td style="text-align:right;">
+9.19
+</td>
+<td style="text-align:right;">
+8.12
+</td>
+<td style="text-align:right;">
+7.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-10-31
+</td>
+<td style="text-align:right;">
+0.721
+</td>
+<td style="text-align:right;">
+6.99
+</td>
+<td style="text-align:right;">
+9.48
+</td>
+<td style="text-align:right;">
+8.48
+</td>
+<td style="text-align:right;">
+7.29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-11-29
+</td>
+<td style="text-align:right;">
+0.685
+</td>
+<td style="text-align:right;">
+7.09
+</td>
+<td style="text-align:right;">
+9.38
+</td>
+<td style="text-align:right;">
+8.40
+</td>
+<td style="text-align:right;">
+7.21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-12-31
+</td>
+<td style="text-align:right;">
+0.731
+</td>
+<td style="text-align:right;">
+7.29
+</td>
+<td style="text-align:right;">
+9.23
+</td>
+<td style="text-align:right;">
+8.36
+</td>
+<td style="text-align:right;">
+7.22
+</td>
+</tr>
+</tbody>
+</table>
+<p>The output above does not give an intuitive understanding of each portfolio return. So we turn to <code>ggplot2</code>, the excellent package for graphics. The code below shows how to create a relatively simple cumulative return chart.</p>
+<pre class="r"><code>ggplot(port_ret, aes(x = dates, group = 1))+
+  geom_line(aes(y = high, color = &quot;High Vol&quot;), size = 1)+
+  geom_line(aes(y = low, color = &quot;Low Vol&quot;), size = 1)+
+  scale_color_manual(&quot;&quot;, values = c(&quot;High Vol&quot; = &quot;#4da734&quot;, 
+                                    &quot;Low Vol&quot; = &quot;#3363fa&quot;))+
+  theme_minimal()+
+  scale_x_date(date_breaks = &quot;1 year&quot;, date_labels =  &quot;%b %y&quot;)+
+  theme(axis.text.x=element_text(angle=60, hjust=1),
+        plot.background=element_rect(fill=&quot;#a5f3e4&quot;),
+        legend.position = &quot;top&quot;,
+        legend.margin = margin(t = -5, r = 0, b = -10, l = 0, unit = &quot;pt&quot;))+
+  labs(y = &quot;Cumulative Portfolio Return&quot;, x = &quot;Date&quot;)</code></pre>
+<p><img src="returns_files/figure-html/graph_results-1.png" width="4200" /></p>
+<p>The graph above shows that high volatility does not give significantly superior performance. In fact, low volatility is vastly superior to high volatility. Worse still, the path to the end is tremondously more volatile, as one would expect. Furthermore, low volatility provides insurance during crashes as can be seen by the performance of high volatility in 2008.</p>
+<p>The story is much worse when one examines the drawdowns.</p>
+<pre class="r"><code># drawdowns
+d.xts &lt;- do.call(cbind, lapply(1:ncol(c.xts), function(j){
+  cx &lt;- cummax(c.xts[, j])
+  dd &lt;- c.xts[, j] / cx
+}))
+
+draw_downs &lt;- data.frame(dates = index(d.xts), d.xts)</code></pre>
+<p>Code chunk above is taken from the calculates the drawdowns of each portfolio.</p>
+<p>The code below is used to create underwater chart.</p>
+<pre class="r"><code>ggplot(draw_downs, aes(x = dates, y = high, group = 1)) +
+  geom_ribbon(aes(ymin = min(high), ymax = high), fill=&quot;#cedccb&quot;, alpha=1) +
+  geom_line(color=&quot;#69b3a2&quot;, size=1) +
+  theme_classic()+
+  scale_x_date(expand = c(0,0), date_breaks = &quot;1 year&quot;, date_labels =  &quot;%y&quot;,
+               position = &quot;top&quot;)+
+  scale_y_continuous(expand = c(0,0))+
+  labs(x = &quot;&quot;, y = &quot;&quot;)+
+  theme(legend.title = element_blank(),
+        legend.key = element_blank(), legend.text = element_text(size = 10),
+        legend.position = &quot;bottom&quot;,
+        legend.margin=margin(c(-25,-25,-5,-5)),
+        plot.margin = unit(c(-0.3,0.1,0.2,-0.4), &quot;cm&quot;))</code></pre>
+<div class="figure">
+<img src="returns_files/figure-html/draw_downs_graph-1.png" alt="High volatility underwater chart" width="4200" />
+<p class="caption">
+High volatility underwater chart
+</p>
+</div>
+<p>So with a high volatility portfolio, one would not have recovered to this day from the 2008 crash. This portfolio has not reached the previous high from 2008 after nearly 12 years, which is remarkable. In addition, the drawdowns are very severe, with the high volatility portfolio being over 60% underwater since the 2008 financial crisis.</p>
+<pre class="r"><code>ggplot(draw_downs, aes(x = dates, y = low, group = 1)) +
+  geom_ribbon(aes(ymin = min(low), ymax = low), fill=&quot;#cedccb&quot;, alpha=1) +
+  geom_line(color=&quot;#69b3a2&quot;, size=1) +
+  theme_classic()+
+  scale_x_date(expand = c(0,0), date_breaks = &quot;1 year&quot;, date_labels =  &quot;%y&quot;,
+               position = &quot;top&quot;)+
+  scale_y_continuous(expand = c(0,0))+
+  labs(x = &quot;&quot;, y = &quot;&quot;)+
+  theme(legend.title = element_blank(),
+        legend.key = element_blank(), legend.text = element_text(size = 10),
+        legend.position = &quot;bottom&quot;,
+        legend.margin=margin(c(-25,-25,-5,-5)),
+        plot.margin = unit(c(-0.3,0.1,0.2,-0.4), &quot;cm&quot;))</code></pre>
+<div class="figure">
+<img src="returns_files/figure-html/low_vol_drawdowns-1.png" alt="low volatility underwater chart" width="4200" />
+<p class="caption">
+low volatility underwater chart
+</p>
+</div>
+<p>The low volatility portfolio fares much better, with it recovering in 2011 from the 2008 crash. The severity of the drawdrown is dramatically better too, with the the portfolio mostly hovering at only 10% underwater.</p>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
