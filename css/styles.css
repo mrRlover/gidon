@@ -3,6 +3,9 @@ p {
     text-align-last: left;
 }
 
+.stargazer {
+    width: 100%;
+}
 
 pre.r {
     color: #f1f1f1;
@@ -76,6 +79,4 @@ pre.r {
     font-weight: bold;
 }
 
-.stargazer {
-    width: 100%;
-}
+c
