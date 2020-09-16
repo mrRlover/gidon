@@ -317,7 +317,11 @@ $(document).ready(function () {
   </a>
 </li>
 <li>
-  <a href="tests.html">Tests</a>
+  <a href="tests.html">
+    <span class="fa fa-calculator"></span>
+     
+    Tests
+  </a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -336,7 +340,8 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>packages &lt;- c(&quot;tidyverse&quot;, &quot;kableExtra&quot;, &quot;knitr&quot;, &quot;tidyquant&quot;)
+<p>Prior to beginning any analysis in R, even before loading data, one needs to load packages that will be used to run tests and clean/transform data. Since this report is being shared with others, it would be ideal to check if a package is installed before trying to load it. We do this using an if test. The <code>require</code> function conveniently returns a logical (TRUE or FALSE) when a package loads or fails to load. We use this to test if a package exists. If it doesn’t the package is installed.</p>
+<pre class="r"><code>packages &lt;- c(&quot;kableExtra&quot;, &quot;knitr&quot;, &quot;tidyquant&quot;)
 
 for (package in packages) {
     if (!require(package, character.only=T, quietly=T)) {
@@ -344,8 +349,10 @@ for (package in packages) {
     }
     library(package, character.only=T)
 }</code></pre>
-<pre class="r"><code>options(&quot;scipen&quot;=99)</code></pre>
-<pre class="r"><code>options(&quot;digits&quot;=3)</code></pre>
+<p>Next is to set global options</p>
+<pre class="r"><code>options(&quot;scipen&quot;=99)
+options(&quot;digits&quot;=3)</code></pre>
+<p>That is it, we are all good to go from here.</p>
 
 
 

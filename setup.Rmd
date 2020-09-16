@@ -2,9 +2,10 @@
 title: "Setting up the workspace"
 ---
 
+Prior to beginning any analysis in R, even before loading data, one needs to load packages that will be used to run tests and clean/transform data. Since this report is being shared with others, it would be ideal to check if a package is installed before trying to load it. We do this using an if test. The `require` function conveniently returns a logical (TRUE or FALSE) when a package loads or fails to load. We use this to test if a package exists. If it doesn't the package is installed.
 
 ```{r packages, results='hide', message=FALSE, warning=FALSE}
-packages <- c("tidyverse", "kableExtra", "knitr", "tidyquant")
+packages <- c("kableExtra", "knitr", "tidyquant")
 
 for (package in packages) {
     if (!require(package, character.only=T, quietly=T)) {
@@ -14,15 +15,11 @@ for (package in packages) {
 }
 ```
 
+Next is to set global options
 
-
-```{r scipen}
+```{r options}
 options("scipen"=99)
-```
-
-
-
-```{r digits}
 options("digits"=3)
 ```
 
+That is it, we are all good to go from here.

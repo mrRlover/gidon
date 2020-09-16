@@ -2,12 +2,8 @@
   title: "Main Research Tests"
 ---
   
----
-  title: "Portfolio Returns"
----
-  
 ```{r prior_code, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
-packages <- c("tidyverse", "kableExtra", "knitr", "tidyquant")
+packages <- c("kableExtra", "knitr", "tidyquant", "stargazer")
 
 for (package in packages) {
   if (!require(package, character.only=T, quietly=T)) {
@@ -107,16 +103,68 @@ c.xts <- cumprod(1+r.xts)
 port_ret <- data.frame(dates = index(-c.xts), c.xts)
 ```
 
+In the final section, we test to see if the returns of the portfolios are statistically significant. In other words, are the returns significant even after adjusting for risk as measured by the capm?
 
+To test this, we first need to find portfolio betas.
 
-```{r }
+```{r betas, comment=NULL, echo=FALSE, eval=TRUE, results='hide', message=FALSE, warning=FALSE}
 jalsh <- jalsh[index(r.xts)]
 rfr <- rfr[index(r.xts)]
-# betas <- lm(r.xts ~ jalsh - rfr)
+betas <- lm(r.xts ~ jalsh - rfr)
+summary(betas)
 ```
 
 
 
+```{r portfolio_betas, warning=FALSE}
+allRegData <- data.frame(sweep(coredata(r.xts), 1, coredata(rfr)), RM = coredata(jalsh) - coredata(rfr))[-1,]
+
+betas <- matrix(NA, nrow = nrow(r.xts)-12, ncol = ncol(r.xts))
+
+for (i in 1:ncol(betas)) {
+  betas[,i] <- rollapply(zoo(allRegData[,c(i, 6)]),
+                         width=12,
+                         FUN = function(Z) 
+                         { 
+                           t = lm(formula=Z[,1]~RM, data = as.data.frame(Z), na.rm=T); 
+                           return(t$coef) 
+                         },
+                         by.column=FALSE, align="right")[,2, drop = FALSE]
+}
+```
+
+The code above creates rolling 12 month betas for each of the portfolios. First we define a data frame that holds our data. The dataframe contains return premiums of the portfolios and of the market. Then we iterate over each column in the dataframe to calculate rolling betas.
+
+To test the return significance of the portfolios, we regress the monthly returns on the portfolio betas. If the returns from the portfolios are commensurate with the risk (i.e beta) of the portfolio, then the intercept term should not be statistically significant.
+
+```{r portfolio_alphas, warning=FALSE}
+alphas <- lapply(r.xts[-c(1:12)], function(x, d) lm(x ~ d), betas)
+```
+
+We use stargazer to report the results. We don't print the initial stargazer output, as there are a couple of things that need changing. So to save the output *and* prevent the output from being printed to the console, we use `capture.output` to save the output quietly.
+
+We then use `gsub()` to rename the labels of the high and low volatility portfolios, so that the result is clear. The second reason we save the stargazer output first is because we want to add a css class for additional styling. In this case, we want the table to fill the width of the container.
+
+```{r regression_results, eval=FALSE, results='asis'}
+stargazer(alphas$high, alphas$port2, alphas$port3, alphas$port4, alphas$low,  type = "html", out = paste0(getwd(), "/Output/results.html"), summary = F, rownames = T, style = "qje" , omit = paste0("d", 1:5), dep.var.labels = colnames(r.xts))
+```
+
+
+
+```{r alphas, results='asis', out.width="500px"}
+output <- capture.output(stargazer(alphas$high, alphas$port2, alphas$port3, alphas$port4, alphas$low,  type = "html", out = paste0(getwd(), "/Output/results.html"), summary = F, rownames = T, style = "qje" , omit = paste0("d", 1:5), dep.var.labels = "Volatility Portfolio"))
+
+output <- gsub("\\(1\\)", "high", output)
+output <- gsub("\\(5\\)", "low", output)
+output <- gsub("<table", "<table class = 'stargazer'", output)
+cat(output)
+```
+</br> 
+
+As you can see from the results above, a high volatility portfolio does not produce statistically significant alphas, while the rest do. It is counterintuitive that portfolios with the lowest risk produce the most returns. Indeed, this a puzzle, which is at odds with the basic tenets of finance.
+
 ```{r blank}
+
+
 ```
 
