@@ -11,7 +11,7 @@
 
 
 
-<title>Sorting shares into volatility portfolios</title>
+<title>Sorting shares into low volatility and low beta portfolios</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -310,17 +310,17 @@ $(document).ready(function () {
   </a>
 </li>
 <li>
-  <a href="returns.html">
-    <span class="fa fa-chart-line"></span>
-     
-    Portfolio Returns
-  </a>
-</li>
-<li>
   <a href="tests.html">
     <span class="fa fa-calculator"></span>
      
     Tests
+  </a>
+</li>
+<li>
+  <a href="diagnostics.html">
+    <span class="fa fa-diagnoses"></span>
+     
+    Diagnostics
   </a>
 </li>
       </ul>
@@ -335,256 +335,12 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Sorting shares into volatility portfolios</h1>
+<h1 class="title toc-ignore">Sorting shares into low volatility and low beta portfolios</h1>
 
 </div>
 
 
 <p>In this section, we sort shares into portfolios following the specification in our methodology section. Subsequently, we calculate the returns to these portfolios.</p>
-<p>Firstly, we rank shares based on their volatility in each month. We use the exact same code we used to rank market capitalisations.</p>
-<pre class="r"><code>vol100 &lt;- t(apply(-vol, 1, rank, na.last = &quot;keep&quot;, ties.method = &quot;first&quot;))</code></pre>
-<p>Since the volatilities are repeated 12 times in each year, we should get the same ranking in each month of the year. We can inspect if this is the case by using <code>head</code> and <code>tail</code>.</p>
-<pre class="r"><code>rbind(head(vol100[-c(1:12),]), tail(vol100))[,1:5]</code></pre>
-<table class = 'pretty-table'>
-<thead>
-<tr>
-<th style="text-align:right;">
-ABG SJ Equity
-</th>
-<th style="text-align:right;">
-ABI SJ Equity
-</th>
-<th style="text-align:right;">
-ABT SJ Equity
-</th>
-<th style="text-align:right;">
-ACL SJ Equity
-</th>
-<th style="text-align:right;">
-ACP SJ Equity
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-<td style="text-align:right;" class="na-data">
-NA
-</td>
-</tr>
-</tbody>
-</table>
-<p>Our logic worked, the ranks are the same for a year.</p>
-<pre class="r"><code>high_vol &lt;- ifelse(vol100 &lt;= quantile(vol100, 0.2, na.rm = TRUE), 1, NA)
-vol_2 &lt;- ifelse(vol100 &gt; quantile(vol100, 0.2, na.rm = TRUE) &amp; vol100 &lt;= quantile(vol100, 0.4, 
-                                                                                  na.rm = TRUE), 1, NA)
-vol_3 &lt;- ifelse(vol100 &gt; quantile(vol100, 0.4, na.rm = TRUE) &amp; vol100 &lt;= quantile(vol100, 0.6, 
-                                                                                  na.rm = TRUE), 1, NA)
-vol_4 &lt;- ifelse(vol100 &gt; quantile(vol100, 0.6, na.rm = TRUE) &amp; vol100 &lt;= quantile(vol100, 0.8, 
-                                                                                  na.rm = TRUE), 1, NA)
-low_vol &lt;- ifelse(vol100 &gt; quantile(vol100, 0.8, 
-                                    na.rm = TRUE), 1, NA)</code></pre>
-<p>We use <code>ifelse</code> to sort shares into high and low volatility portfolios. The top 20 shares are the highest volatility shares and the bottom 20 shares are the lowest volatility shares.</p>
-<p>The above code creates five matrices with 20 shares in each row of each matrix containing a 1 corresponding to that share belonging to that portfolio in that time frame.</p>
-<p>The usefulness of this is that it is very easy to calculate portfolio returns.</p>
 
 
 

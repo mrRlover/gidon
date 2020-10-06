@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Regression Diagnostics</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="css\styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Honours R Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="setup.html">
+    <span class="fa fa-cog"></span>
+     
+    Setup
+  </a>
+</li>
+<li>
+  <a href="data.html">
+    <span class="fa fa-info"></span>
+     
+    Data Import
+  </a>
+</li>
+<li>
+  <a href="data-setup.html">
+    <span class="fa fa-exchange-alt"></span>
+     
+    Data Setup
+  </a>
+</li>
+<li>
+  <a href="sorts.html">
+    <span class="fa fa-sort-amount-up"></span>
+     
+    Portfolio Sorts
+  </a>
+</li>
+<li>
+  <a href="tests.html">
+    <span class="fa fa-calculator"></span>
+     
+    Tests
+  </a>
+</li>
+<li>
+  <a href="diagnostics.html">
+    <span class="fa fa-diagnoses"></span>
+     
+    Diagnostics
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Regression Diagnostics</h1>
+
+</div>
+
+
+<p>This is the final part of the project. Here we look at post-regression diagnostic plots, which is an important part of the overall modelling process. We will be using <code>ggplot2</code>, rather than the base <code>plot()</code> function to plot the model diagnostics. As we will be making similar plots, we save a theme that will be added to later plots.</p>
+<pre class="r"><code>my_theme &lt;- theme(
+        plot.background=element_rect(fill=&quot;#c8f8ee&quot;),
+        legend.position = &quot;none&quot;,
+        legend.margin = margin(t = -5, r = 0, b = -10, l = 0, unit = &quot;pt&quot;),
+        panel.grid.major = element_line(colour = &quot;#c4d4d1&quot;),
+        panel.grid.minor = element_line(colour = &quot;#c4d4d1&quot;)
+        )</code></pre>
+<p>The above theme simply changes the background of the plot, removes a legend and changes the colour of the grid lines on the plot. It also changes the area of the plot.</p>
+<div id="residuals-vs-fitted" class="section level2">
+<h2>Residuals vs Fitted</h2>
+<p>We start first begin by ploting the residuals against the fitted values. The <code>ggplot()</code> function can now take an <code>lm</code> object to the data argument. we map the fitted values to the x axis, extracting them with <code>.fitted</code>. The residuals are extracted in a similar fashion with <code>.resid</code>, mapped to the y axis.</p>
+<p>We use <code>geom_point()</code> to create a scatter plot. Notice that we use color inside <code>geom_point()</code>, rather than inside <code>ggplot()</code> to make sure that only the points get this colour. In addition, we use color outside of an <code>aes()</code> call, so that ggplot uses the actual colour, rather than taking it as an aesthetic, which won’t use the actual colour, but rather take it as a coloring variable.</p>
+<p>The color that we have specified is a certain shade of red. If we had used color inside <code>aes()</code>, it would not be red. This is because <code>ggplot()</code>, will simply take it as a unique identifier for each points color. This is why color inside <code>aes()</code> has to be either length 1 (all points have the same code) or same length as the data (each point gets its own identifying color code). The same is true for geom_smooth, which we use to give a line of best fit. This is why there is no <code>scale_color_manual()</code> call in these plots.</p>
+<pre class="r"><code>ggplot(alphas$high, aes(x = .fitted, y = .resid)) + 
+  geom_point(color = &quot;#ff002b&quot;)+
+  geom_smooth(se=F, color = &quot;#012060&quot;)+
+  theme_minimal()+
+  labs(title = &quot;Residual vs Fitted&quot;, x = &quot;Fitted&quot;, y = &quot;Residual&quot;)+
+  my_theme</code></pre>
+<pre><code>## Don&#39;t know how to automatically pick scale for object of type xts/zoo. Defaulting to continuous.</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="diagnostics_files/figure-html/lm_plot-1.png" width="4032" /></p>
+<p>We can see from the above that there is no discernable relationship between the residuals and the plotted values, which is the desire outcome.</p>
+</div>
+<div id="normal-q-q-plot" class="section level2">
+<h2>Normal Q-Q Plot</h2>
+<p>The standard Q-Q diagnostic for linear models plots quantiles of the standardized residuals vs. theoretical quantiles of N(0,1). The <code>geom_qq()</code> function plots the residuals. The snippet below amends that and adds a few cosmetic changes to make the plot more like what one would get from <code>plot(lm(...))</code>.</p>
+<pre class="r"><code># extract standardized residuals from the fit
+d &lt;- data.frame(std.resid = rstandard(alphas$high))
+# calculate 1Q/4Q line
+y &lt;- quantile(d$std.resid[!is.na(d$std.resid)], c(0.25, 0.75))
+x &lt;- qnorm(c(0.25, 0.75))
+slope &lt;- diff(y)/diff(x)
+int &lt;- y[1L] - slope * x[1L]
+
+ggplot(data=d, aes(sample=std.resid, colour = &quot;dots&quot;))+  
+  geom_qq_line(colour = &quot;#012060&quot;, size = 1)+
+  geom_qq()+
+  scale_color_manual(values = c(&quot;dots&quot; = &quot;#ff002b&quot;))+
+  labs(title = &quot;Normal Q-Q&quot;, x = &quot;Theoretical Quantiles&quot;, y = &quot;Standardised Residuals&quot;)+
+  theme_minimal()+
+  my_theme</code></pre>
+<p><img src="diagnostics_files/figure-html/qqplot-1.png" width="4032" /></p>
+<p>The plot above shows that the standardised residuals are about as close as one can get to a normal distribution, given the data.</p>
+</div>
+<div id="cooks-distance" class="section level2">
+<h2>Cooks Distance</h2>
+<p>Cook’s distance is used to see hoe much a single data point influences the model output from an ordinary least-squares regression. Data points that stand out should be checked for validity. Large outliers maybe distort the outcome of a regression. However, it does not necessarily mean that these points should be excluded unless there is a theoretical reason for doing so. If not, it simply means that the outlier is part of the data. The plot below is a classic case in point.</p>
+<pre class="r"><code>ggplot(alphas$high, aes(seq_along(.cooksd), .cooksd, fill = coredata(.cooksd)))+
+  geom_bar(stat=&quot;identity&quot;, position=&quot;identity&quot;)+
+  scale_fill_continuous(&quot;key&quot;, low =&quot;#012060&quot;, high = &quot;#ff002b&quot;)+
+  xlab(&quot;Obs. Number&quot;)+ylab(&quot;Cook&#39;s distance&quot;)+ggtitle(&quot;Cook&#39;s distance&quot;)+
+  theme_minimal()+
+  my_theme+
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<pre><code>## Don&#39;t know how to automatically pick scale for object of type xts/zoo. Defaulting to continuous.</code></pre>
+<p><img src="diagnostics_files/figure-html/cooks_distance-1.png" width="4032" /></p>
+<p>The plot above shows that the point round about the 80 mark or has a massive influence on the data. So we should exclude it right? Maybe not. Let’s first see what period this is show we.</p>
+<pre class="r"><code>unique(year(port_ret[75:90,1]))</code></pre>
+<pre><code>[1] 2007 2008</code></pre>
+<p>As we can see above, it looks like the point comes from the late 2007 period, which around September or so was a period of extreme volatility. This is a high volatility portfolio, so this data point is not an outlier and should not be excluded. The following section also analyses outliers.</p>
+</div>
+<div id="residuals-vs-leverage" class="section level2">
+<h2>Residuals vs Leverage</h2>
+<p>The residuals vs leverage plot is used to spot outliers from linear regression model. Leverage is simply the distance between one covariate <span class="math inline">\(X^{(i)}\)</span> and other covariates. In a linear regression, it shows the sensitivity of a fitted <span class="math inline">\(\hat{y}_i\)</span> to changes in the true response <span class="math inline">\(y_i\)</span>.</p>
+<pre class="r"><code>ggplot(alphas$high, aes(.hat, .stdresid))+
+  geom_point(aes(size=coredata(.cooksd), colour = &quot;red&quot;), na.rm=TRUE)+
+  stat_smooth(method=&quot;loess&quot;, colour = &quot;#012060&quot;, na.rm=TRUE)+
+  scale_color_manual(&quot;&quot;, values = c(&quot;red&quot; = &quot;#ff002b&quot;), labels = &quot;&quot;,
+                     guide = guide_legend(override.aes = list(shape = c(NA),
+                                                              colour = &quot;#ff002b&quot;))
+                     )+
+  labs(title = &quot;Residual vs Leverage Plot&quot;, x = &quot;Leverage&quot;, y =&quot;Standardized Residuals&quot;)+
+  scale_size_continuous(&quot;Cook&#39;s Distance&quot;, range=c(1,5),
+                        guide = guide_legend(override.aes =  list( colour = &quot;#ff002b&quot;)))+
+  theme_minimal()+
+  my_theme+
+  theme(legend.position=c(0.5,-0.15),
+        legend.direction = &quot;horizontal&quot;,
+        legend.key.size = unit(1, &quot;mm&quot;),
+        plot.margin=unit(c(0.1,0.5,1,0),&quot;cm&quot;))</code></pre>
+<p><img src="diagnostics_files/figure-html/residuals_vs_leverage-1.png" width="4032" /></p>
+<p>The plot above shows the fitted values against the leverage. The size of the points indicates the cooks distance. Almost immediately, we can spot the point from the earlier graph. It is the lone point at the bottom edge of the graph. The point is also the largest, indicating a high cooks distance. However, we stress once more that we can not exclude this point. Extreme returns, particularly of the negative kind, are a feature of market returns.</p>
+<p>The spread of the standardised residuals appears to get smaller as the leverage increases, which implies heteroscedasticity and non-linearity. We can inspect this further with the scale location plot.</p>
+</div>
+<div id="scale-location" class="section level2">
+<h2>Scale-Location</h2>
+<p>The scale-location plot is used to detect heteroscedasticity.</p>
+<pre class="r"><code>ggplot(alphas$high, aes(.fitted, sqrt(abs(.stdresid))))+
+  geom_point(colour = &quot;#ff002b&quot;, na.rm=TRUE)+
+  stat_smooth(method=&quot;loess&quot;, colour = &quot;#012060&quot;, na.rm = TRUE)+
+  labs(title = &quot;Scale-Location&quot;, x = &quot;Fitted Value&quot;, y = expression(sqrt(&quot;|Standardized residuals|&quot;)))+
+  theme_minimal()+
+  my_theme</code></pre>
+<p><img src="diagnostics_files/figure-html/scale_location-1.png" width="4032" /></p>
+<p>We can see that blue line is approximately horizontal. Additionally, the magnitude (or spread) of the standardized residuals does not change drastically as the fitted values change. Both of these things suggest homoscedasticity.</p>
+</div>
+<div id="cooks-distance-vs-leverage" class="section level2">
+<h2>Cooks distance vs Leverage</h2>
+<p>The last point now plots cooks distance against leverage. Cooks distance shows how much the whole regression model would change if <span class="math inline">\((x_i, y_i)\)</span> is removed.</p>
+<pre class="r"><code>ggplot(alphas$high, aes(.hat, .cooksd))+
+  geom_point(na.rm=TRUE, colour = &quot;#ff002b&quot;)+
+  stat_smooth(method=&quot;loess&quot;, colour = &quot;#012060&quot;, na.rm=TRUE)+
+  labs(title = &quot;Cook&#39;s dist vs Leverage hii/(1-hii)&quot;, 
+       x = &quot;Leverage hii&quot;, y = &quot;Cook&#39;s Distance&quot;)+
+  geom_abline(slope=seq(0,3,0.5), color=&quot;#2d0f3c&quot;, linetype=&quot;dashed&quot;)+
+  theme_minimal()+
+  my_theme</code></pre>
+<p><img src="diagnostics_files/figure-html/cdist_leverage-1.png" width="4032" /></p>
+<p>The plot above shows that the leverage of the most extreme outlier is low, which implies that the influence on the model is low.</p>
+<p>With that done, we now redo the same thing for the rest of the regression models (i.e. for each portfolio).</p>
+</div>
+<div id="other-volatility-portfolio-diagnostics" class="section level2">
+<h2>Other volatility portfolio diagnostics</h2>
+<p>Since the code will be repetitive for the rest of the four portfolios, a for loop would be the most concise approach. We will simply loop through our list of linear models, extracting each one iteratively, to make each of the six plots made above. Then the plots will be saved to include in the html output.</p>
+<p>We use different background colours for each plot, just to make it easier to tell the plots apart. The second set of colours is simply for the grid lines, some of the background colors require slightly different line shades. The rest of the code is simply a repetition from the code above.</p>
+<pre class="r"><code>plot_colours &lt;- vector(&quot;list&quot;, length = length(alphas[-1]))
+
+names(plot_colours) &lt;- names(alphas[-1])
+
+plot_colours[[1]] &lt;- c(&quot;#dbfd9b&quot;, &quot;#ffffff&quot;)
+plot_colours[[2]] &lt;- c(&quot;#fdb2a8&quot;, &quot;#938b8a&quot;)
+plot_colours[[3]] &lt;- c(&quot;#ce9dff&quot;, &quot;#807689&quot;)
+plot_colours[[4]] &lt;- c(&quot;#ffff89&quot;, &quot;#898976&quot;) 
+
+i &lt;- 1
+
+for (mod in alphas[-1]) {
+
+resid_fit &lt;- ggplot(alphas$high, aes(x = .fitted, y = .resid)) + 
+  geom_point(color = &quot;#ff002b&quot;)+
+  geom_smooth(se=F, color = &quot;#012060&quot;)+
+  labs(title = paste(&quot;Residual vs Fitted&quot;, names(alphas[-1])[i], &quot;volatility portfolio&quot;), 
+       x = &quot;Fitted&quot;, y = &quot;Residual&quot;)+ 
+  theme_minimal()+
+  theme(
+    plot.background=element_rect(fill=plot_colours[[i]][1]),
+    legend.position = &quot;none&quot;,
+    panel.grid.major = element_line(colour = plot_colours[[i]][2]),
+    panel.grid.minor = element_line(colour = plot_colours[[i]][2])
+  )
+
+  # extract standardized residuals from the fit
+  d &lt;- data.frame(std.resid = rstandard(mod))
+  # calculate 1Q/4Q line
+  y &lt;- quantile(d$std.resid[!is.na(d$std.resid)], c(0.25, 0.75))
+  x &lt;- qnorm(c(0.25, 0.75))
+  slope &lt;- diff(y)/diff(x)
+  int &lt;- y[1L] - slope * x[1L]
+  
+  q &lt;- ggplot(data=d, aes(sample=std.resid, colour = &quot;dots&quot;))+  
+    geom_qq_line(colour = &quot;#012060&quot;, size = 1)+
+    geom_qq()+
+    scale_color_manual(values = c(&quot;dots&quot; = &quot;#ff002b&quot;))+
+    labs(title = paste(&quot;Normal Q-Q&quot;, names(alphas[-1])[i], &quot;volatility portfolio&quot;) ,
+         x = &quot;Theoretical Quantiles&quot;, y = &quot;Standardised Residuals&quot;)+
+    theme_minimal()+
+    theme(
+      plot.background=element_rect(fill=plot_colours[[i]][1]),
+      legend.position = &quot;none&quot;,
+      panel.grid.major = element_line(colour = plot_colours[[i]][2]),
+      panel.grid.minor = element_line(colour = plot_colours[[i]][2])
+    )
+  
+  cdist &lt;-  ggplot(mod, aes(seq_along(.cooksd), .cooksd, fill = coredata(.cooksd)))+
+    geom_bar(stat=&quot;identity&quot;, position=&quot;identity&quot;)+
+    scale_fill_continuous(&quot;key&quot;, low =&quot;#012060&quot;, high = &quot;#ff002b&quot;)+
+    labs(title = paste(&quot;Cook&#39;s distance&quot;, names(alphas[-1])[i], &quot;volatility portfolio&quot;), 
+         x = &quot;Obs. Number&quot;, y = &quot;Cook&#39;s distance&quot;)+
+    theme_minimal()+
+    theme(
+      plot.background=element_rect(fill=plot_colours[[i]][1]),
+      legend.position = &quot;right&quot;,
+      panel.grid.major = element_line(colour = plot_colours[[i]][2]),
+      panel.grid.minor = element_line(colour = plot_colours[[i]][2])
+    )
+  
+  resid_lev &lt;- ggplot(mod, aes(.hat, .stdresid))+
+    geom_point(aes(size=coredata(.cooksd), colour = &quot;red&quot;), na.rm=TRUE)+
+    stat_smooth(method=&quot;loess&quot;, colour = &quot;#012060&quot;, na.rm=TRUE)+
+    scale_color_manual(&quot;&quot;, values = c(&quot;red&quot; = &quot;#ff002b&quot;), labels = &quot;&quot;,
+                       guide = guide_legend(override.aes = list(shape = c(NA),
+                                                                colour = &quot;#ff002b&quot;))
+                       )+
+    labs(title = paste(&quot;Residual vs Leverage Plot&quot;, names(alphas[-1])[i], &quot;volatility portfolio&quot;),
+         x = &quot;Leverage&quot;, y =&quot;Standardized Residuals&quot;)+
+    scale_size_continuous(&quot;Cook&#39;s Distance&quot;, range=c(1,5),
+                          guide = guide_legend(override.aes =  list( colour = &quot;#ff002b&quot;)))+
+  theme_minimal()+
+    theme(
+      plot.background=element_rect(fill=plot_colours[[i]][1]),
+      legend.margin = margin(t = -5, r = 0, b = -10, l = 0, unit = &quot;pt&quot;),
+      panel.grid.major = element_line(colour = plot_colours[[i]][2]),
+      panel.grid.minor = element_line(colour = plot_colours[[i]][2]),
+      legend.position=c(0.5,-0.15),
+      legend.direction = &quot;horizontal&quot;,
+      legend.key.size = unit(1, &quot;mm&quot;),
+      plot.margin=unit(c(0.1,0.5,1,0),&quot;cm&quot;))
+  
+  
+  scloc &lt;- ggplot(mod, aes(.fitted, sqrt(abs(.stdresid))))+
+    geom_point(colour = &quot;#ff002b&quot;, na.rm=TRUE)+
+    stat_smooth(method=&quot;loess&quot;, colour = &quot;#012060&quot;, na.rm = TRUE)+
+    labs(title = paste(&quot;Scale-Location&quot;, names(alphas[-1])[i], &quot;volatility portofolio&quot;), x = &quot;Fitted Value&quot;, y = expression(sqrt(&quot;|Standardized residuals|&quot;)))+
+    theme_minimal()+
+    theme(
+      plot.background=element_rect(fill=plot_colours[[i]][1]),
+      legend.position = &quot;none&quot;,
+      panel.grid.major = element_line(colour = plot_colours[[i]][2]),
+      panel.grid.minor = element_line(colour = plot_colours[[i]][2])
+    )
+  
+  cdist_lev &lt;- ggplot(mod, aes(.hat, .cooksd))+
+    geom_point(na.rm=TRUE, colour = &quot;#ff002b&quot;)+
+    stat_smooth(method=&quot;loess&quot;, colour = &quot;#012060&quot;, na.rm=TRUE)+
+    labs(title = paste(&quot;Cook&#39;s dist vs Leverage hii/(1-hii)&quot;, names(alphas[-1])[i],
+                       &quot;volatility portfolio&quot;),
+         x = &quot;Leverage hii&quot;, y = &quot;Cook&#39;s Distance&quot;)+
+    geom_abline(slope=seq(0,3,0.5), color=&quot;#2d0f3c&quot;, linetype=&quot;dashed&quot;)+
+    theme_minimal()+
+    theme(
+      plot.background=element_rect(fill=plot_colours[[i]][1]),
+      legend.position = &quot;none&quot;,
+      panel.grid.major = element_line(colour = plot_colours[[i]][2]),
+      panel.grid.minor = element_line(colour = plot_colours[[i]][2])
+    )
+
+  png(paste(&quot;images/resid_fitted&quot;, &quot;img&quot;, i, &quot;.png&quot;, sep = &quot;_&quot;), height = 480*8, width = 480*8, res = 72*8)
+  print(resid_fit)
+  dev.off()
+    
+  png(paste(&quot;images/qq_plot&quot;, &quot;img&quot;, i, &quot;.png&quot;, sep = &quot;_&quot;), height = 480*8, width = 480*8, res = 72*8)
+  print(q)
+  dev.off()
+  
+  png(paste(&quot;images/resid_lev&quot;, &quot;img&quot;, i, &quot;.png&quot;, sep = &quot;_&quot;), height = 480*8, width = 480*8, res = 72*8)
+  print(resid_lev)
+  dev.off()
+  
+
+  png(paste(&quot;images/cooks_distance&quot;, &quot;img&quot;, i, &quot;.png&quot;, sep = &quot;_&quot;), height = 480*8, width = 480*8, res = 72*8)
+  print(cdist)
+  dev.off()
+  
+  png(paste(&quot;images/scale_location&quot;, &quot;img&quot;, i, &quot;.png&quot;, sep = &quot;_&quot;), height = 480*8, width = 480*8, res = 72*8)
+  print(scloc)
+  dev.off()
+  
+  png(paste(&quot;images/cdist_lev&quot;, &quot;img&quot;, i, &quot;.png&quot;, sep = &quot;_&quot;), height = 480*8, width = 480*8, res = 72*8)
+  print(cdist_lev)
+  dev.off()
+  
+  i = i + 1
+  
+}</code></pre>
+<p>With 24 images to include, there are two issues. One is space for the images, particularly ones of this size. The other issue is including the images themselves. What we do here is create a row of four images, and make six rows. This is tedious to type in HTML markdown, so we use the <code>htmltools</code> package to dynamically create the html in R. We do this by looping through the list of images, adding the file paths to a div with an img tag, where the src is the file path. The <code>cat()</code> function then takes all of the output from the paste and removes things such as new line characters. This then produces an unbroken chain of HTML code. This is essentially a mini HTML code compiler. The output is passed to HTML, which will let R treat the character vector passed to it as HTML markup.</p>
+<p>We’ve added some external javascript and css to make sure that the images in the rows can be seen. To view the images, simply click on the image and it will enlarge. It will also show the image at the bottom, in a much larger size. You can click on the cross in the top right corner to close.</p>
+<pre class="r watch-out"><code>img_gallery &lt;- function(img_src) {
+
+# adapted from https://www.w3schools.com/howto/howto_js_tab_img_gallery.asp
+
+# R version of html from above link - added for loop to dynamically add images
+
+HTML(
+  paste(
+    div(class=&quot;row&quot;,
+        HTML(
+          for (i in seq_along(img_src)) {
+            cat(paste((div(class=&quot;column&quot;,
+                           img(src=img_src[i], alt=&quot;gidon&quot;, onclick=&quot;myFunction(this);&quot;)))))
+          }
+        )
+            ),
+    # The expanding image container --
+    div(class=&quot;img-container&quot;,
+        # Close the image --&gt;
+        span(onclick=&quot;this.parentElement.style.display=&#39;none&#39;&quot;, class=&quot;closebtn&quot;,HTML(&quot;&amp;times;&quot;)),
+        # Expanded image --&gt;
+        img(id=&quot;expandedImg&quot;, style=&quot;width:100%&quot;),
+        # Image text --&gt;
+        div(id=&quot;imgtext&quot;)
+    )
+  )
+)
+  
+}
+
+img_gallery(img_src = list.files(&quot;images&quot;, full.names = TRUE))</code></pre>
+<div class="column">
+<p><img src="images/cdist_lev_img_1_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cdist_lev_img_2_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cdist_lev_img_3_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cdist_lev_img_4_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cooks_distance_img_1_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cooks_distance_img_2_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cooks_distance_img_3_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/cooks_distance_img_4_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/qq_plot_img_1_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/qq_plot_img_2_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/qq_plot_img_3_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/qq_plot_img_4_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_fitted_img_1_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_fitted_img_2_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_fitted_img_3_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_fitted_img_4_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_lev_img_1_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_lev_img_2_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_lev_img_3_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/resid_lev_img_4_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/scale_location_img_1_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/scale_location_img_2_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/scale_location_img_3_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="column">
+<p><img src="images/scale_location_img_4_.png" alt="gidon" onclick="myFunction(this);"/></p>
+</div>
+<div class="row"></div> <div class="img-container">
+  <span onclick="this.parentElement.style.display=&#39;none&#39;" class="closebtn">&times;</span>
+  <img id="expandedImg" style="width:100%"/>
+  <div id="imgtext"></div>
+</div>
+<script type="text/javascript">
+
+/* https://www.w3schools.com/howto/howto_js_tab_img_gallery.asp */
+
+function myFunction(imgs) {
+  // Get the expanded image
+  var expandImg = document.getElementById("expandedImg");
+  // Get the image text
+  var imgText = document.getElementById("imgtext");
+  // Use the same src in the expanded image as the image being clicked on from the grid
+  expandImg.src = imgs.src;
+  // Use the value of the alt attribute of the clickable image as text inside the expanded image
+  imgText.innerHTML = imgs.alt;
+  // Show the container element (hidden with CSS)
+  expandImg.parentElement.style.display = "block";
+}
+</script>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
