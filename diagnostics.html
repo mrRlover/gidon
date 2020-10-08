@@ -310,6 +310,13 @@ $(document).ready(function () {
   </a>
 </li>
 <li>
+  <a href="returns.html">
+    <span class="fa fa-chart-line"></span>
+     
+    Portfolio Returns
+  </a>
+</li>
+<li>
   <a href="tests.html">
     <span class="fa fa-calculator"></span>
      
@@ -360,8 +367,6 @@ $(document).ready(function () {
   theme_minimal()+
   labs(title = &quot;Residual vs Fitted&quot;, x = &quot;Fitted&quot;, y = &quot;Residual&quot;)+
   my_theme</code></pre>
-<pre><code>## Don&#39;t know how to automatically pick scale for object of type xts/zoo. Defaulting to continuous.</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="diagnostics_files/figure-html/lm_plot-1.png" width="4032" /></p>
 <p>We can see from the above that there is no discernable relationship between the residuals and the plotted values, which is the desire outcome.</p>
 </div>
@@ -396,7 +401,6 @@ ggplot(data=d, aes(sample=std.resid, colour = &quot;dots&quot;))+
   theme_minimal()+
   my_theme+
   theme(legend.position = &quot;right&quot;)</code></pre>
-<pre><code>## Don&#39;t know how to automatically pick scale for object of type xts/zoo. Defaulting to continuous.</code></pre>
 <p><img src="diagnostics_files/figure-html/cooks_distance-1.png" width="4032" /></p>
 <p>The plot above shows that the point round about the 80 mark or has a massive influence on the data. So we should exclude it right? Maybe not. Let’s first see what period this is show we.</p>
 <pre class="r"><code>unique(year(port_ret[75:90,1]))</code></pre>
